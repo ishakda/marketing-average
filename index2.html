@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حساب المعدل - التسويق</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 16px;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+        td {
+            padding: 15px 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e8f4fc;
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 16px;
+        }
+        .result {
+            background-color: #2c3e50;
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 30px;
+            font-size: 22px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .result span {
+            color: #2ecc71;
+            font-size: 32px;
+            display: block;
+            margin-top: 10px;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #27ae60;
+        }
+        .reset {
+            background-color: #e74c3c;
+        }
+        .reset:hover {
+            background-color: #c0392b;
+        }
+        .footnote {
+            margin-top: 25px;
+            color: #7f8c8d;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 حساب المعدل الفصلي - تخصص التسويق</h1>
+        
+        <table id="gradesTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>المادة</th>
+                    <th>المعامل</th>
+                    <th>علامة المراقبة</th>
+                    <th>علامة الاختبار</th>
+                    <th>العلامة الكلية</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- سيتم ملؤها بواسطة JavaScript -->
+            </tbody>
+        </table>
+
+        <div class="controls">
+            <button onclick="calculateAverage()">🧮 حساب المعدل</button>
+            <button class="reset" onclick="resetAll()">🔄 إعادة تعيين</button>
+        </div>
+
+        <div class="result" id="resultDiv" style="display: none;">
+            المعدل الفصلي: <span id="averageResult">0.00</span>
+        </div>
+
+        <div class="footnote">
+            ⚠️ أدخل العلامات من 0 إلى 20. سيتم حساب العلامة الكلية باستخدام الأوزان المخفية.
+        </div>
+    </div>
+
+    <script>
+        // بيانات المواد من الصور المرفوعة (مع الأوزان المخفية)
+        const subjects = [
+            { name: "لغة أجنبية متخصصة 1", coefficient: 1, weightContinuous: 1.00, weightExam: 0.00 },
+            { name: "الأساليب الكمية في التسويق 1", coefficient: 2, weightContinuous: 0.40, weightExam: 0.60 },
+            { name: "التحليل الاستراتيجي والتنافسي", coefficient: 2, weightContinuous: 0.40, weightExam: 0.60 },
+            { name: "إدارة المبيعات والقوى البيئية", coefficient: 2, weightContinuous: 0.40, weightExam: 0.60 },
+            { name: "إدارة الخدمات", coefficient: 2, weightContinuous: 0.40, weightExam: 0.60 },
+            { name: "الاتصال والتحرير الإداري", coefficient: 2, weightContinuous: 0.40, weightExam: 0.60 },
+            { name: "تطبيقات في التسويق الرقمي", coefficient: 2, weightContinuous: 0.40, weightExam: 0.60 },
+            { name: "إدارة العلامة التجارية", coefficient: 2, weightContinuous: 0.40, weightExam: 0.60 }
+        ];
+
+        const tableBody = document.getElementById('tableBody');
+
+        // إنشاء جدول المواد
+        subjects.forEach((subject, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${subject.name}</td>
+                <td>${subject.coefficient}</td>
+                <td><input type="number" min="0" max="20" step="0.5" id="cont${index}" placeholder="0-20"></td>
+                <td><input type="number" min="0" max="20" step="0.5" id="exam${index}" placeholder="0-20"></td>
+                <td id="total${index}">0.00</td>
+            `;
+            tableBody.appendChild(row);
+
+            // حساب العلامة الكلية عند تغيير المدخلات
+            row.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    calculateSubjectTotal(index);
+                });
+            });
+        });
+
+        // حساب العلامة الكلية لكل مادة (باستخدام الأوزان المخفية)
+        function calculateSubjectTotal(index) {
+            const contInput = document.getElementById(`cont${index}`);
+            const examInput = document.getElementById(`exam${index}`);
+            const totalCell = document.getElementById(`total${index}`);
+
+            const contGrade = parseFloat(contInput.value) || 0;
+            const examGrade = parseFloat(examInput.value) || 0;
+
+            const subject = subjects[index];
+            // استخدام الأوزان المخفية في الحساب
+            const total = (contGrade * subject.weightContinuous) + (examGrade * subject.weightExam);
+            totalCell.textContent = total.toFixed(2);
+        }
+
+        // حساب المعدل العام
+        function calculateAverage() {
+            let totalWeighted = 0;
+            let totalCoefficient = 0;
+
+            subjects.forEach((subject, index) => {
+                const contInput = document.getElementById(`cont${index}`);
+                const examInput = document.getElementById(`exam${index}`);
+
+                const contGrade = parseFloat(contInput.value) || 0;
+                const examGrade = parseFloat(examInput.value) || 0;
+
+                // استخدام الأوزان المخفية في الحساب
+                const total = (contGrade * subject.weightContinuous) + (examGrade * subject.weightExam);
+                totalWeighted += total * subject.coefficient;
+                totalCoefficient += subject.coefficient;
+            });
+
+            const average = totalCoefficient > 0 ? totalWeighted / totalCoefficient : 0;
+            
+            document.getElementById('averageResult').textContent = average.toFixed(2);
+            document.getElementById('resultDiv').style.display = 'block';
+
+            // تلوين المعدل
+            const resultSpan = document.getElementById('averageResult');
+            if (average >= 10) {
+                resultSpan.style.color = '#2ecc71';
+            } else {
+                resultSpan.style.color = '#e74c3c';
+            }
+        }
+
+        // إعادة تعيين كل الحقول
+        function resetAll() {
+            subjects.forEach((subject, index) => {
+                document.getElementById(`cont${index}`).value = '';
+                document.getElementById(`exam${index}`).value = '';
+                document.getElementById(`total${index}`).textContent = '0.00';
+            });
+            document.getElementById('resultDiv').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
